@@ -65,7 +65,7 @@ body {
 .js .js-only { display: inline-flex; align-items: center; gap: .4em; }
 
 /* Sections */
-.team { margin-block: clamp(28px, 5vw, 48px); scroll-margin-top: 1rem; }
+.team { margin-block: clamp(28px, 5vw, 48px); }
 .team-heading {
   font-size: clamp(1.3rem, 3vw, 1.7rem); margin: 0 0 1rem;
   padding-bottom: .5rem; border-bottom: 2px solid var(--line);
@@ -124,24 +124,63 @@ a:focus-visible, button:focus-visible {
   outline: 3px solid var(--brand); outline-offset: 2px; border-radius: 4px;
 }
 
-/* Random-poster highlight */
-.card.is-highlighted { animation: poster-pop 1.8s ease; }
-@keyframes poster-pop {
-  0%   { box-shadow: 0 0 0 0 rgba(255, 213, 74, 0); }
-  15%  { box-shadow: 0 0 0 6px rgba(255, 213, 74, .9); transform: translateY(-3px); }
-  100% { box-shadow: 0 0 0 0 rgba(255, 213, 74, 0); }
+/* Random-poster viewer page (random.html) */
+.viewer-main { padding-block: clamp(20px, 4vw, 40px); }
+.viewer-controls {
+  display: flex; flex-wrap: wrap; gap: .75rem; align-items: center;
+  margin-bottom: clamp(16px, 3vw, 28px);
 }
-.card.is-highlighted { outline: 3px solid var(--highlight); outline-offset: 2px; }
+.viewer-controls .spacer { flex: 1; }
+.btn-secondary {
+  background: var(--surface); color: var(--ink); border-color: var(--line);
+  box-shadow: var(--shadow);
+}
+.btn-secondary:hover { transform: translateY(-1px); background: #fbfbfd; }
+
+.poster-stage {
+  display: grid; gap: clamp(18px, 3vw, 36px);
+  grid-template-columns: minmax(0, 1.6fr) minmax(240px, 1fr);
+  align-items: start;
+}
+@media (max-width: 760px) { .poster-stage { grid-template-columns: 1fr; } }
+
+.poster-figure {
+  margin: 0; background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); box-shadow: var(--shadow); padding: 10px;
+  line-height: 0;
+}
+.poster-figure img {
+  width: 100%; height: auto; max-height: 82vh; object-fit: contain;
+  display: block; border-radius: 6px;
+}
+/* Visible focus when the viewer moves focus to the poster (programmatic focus,
+   so :focus rather than :focus-visible). */
+.poster-figure { scroll-margin-top: 1rem; }
+.poster-figure:focus { outline: 3px solid var(--brand); outline-offset: 3px; }
+.poster-figure:focus:not(:focus-visible) { outline: 3px solid var(--brand); }
+.poster-meta { position: sticky; top: 1rem; display: flex; flex-direction: column; gap: .75rem; }
+.poster-meta .card-badge { font-size: .8rem; }
+.poster-meta h2 { margin: 0; font-size: clamp(1.3rem, 3vw, 1.9rem); line-height: 1.25; }
+.poster-meta .card-authors, .poster-meta .card-desc { font-size: 1rem; }
+.poster-meta .team-name { color: var(--ink-soft); font-size: .95rem; margin: 0; }
+.poster-meta .pdf-link { font-size: 1rem; margin-top: .25rem; }
+
+.poster-fade { animation: poster-fade .28s ease; }
+@keyframes poster-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.viewer-empty { padding: 3rem 0; color: var(--ink-soft); }
 
 /* Footer */
 .site-footer {
   margin-top: clamp(40px, 8vw, 80px); border-top: 1px solid var(--line);
   padding-block: 24px; color: var(--ink-soft); font-size: .9rem;
 }
+.site-footer a { color: var(--brand); text-decoration: none; font-weight: 600; }
+.site-footer a:hover { text-decoration: underline; }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .card, .btn { transition: none; }
-  .card.is-highlighted { animation: none; }
+  .card, .btn, .poster-stage img { transition: none; }
+  .poster-fade { animation: none !important; }
 }

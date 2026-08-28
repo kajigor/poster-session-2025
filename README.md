@@ -18,9 +18,12 @@ Pages, Netlify, or an institutional web server.
 | `data/teams.csv` | **source** | Section display names and their order. |
 | `data/site.json` | **source** | Page title, subtitle, intro, footer. |
 | `scripts/build-gallery.py` | **source** | Regenerates previews + `index.html`. |
-| `scripts/template.html` | **source** | HTML shell the page is built from. |
-| `styles.css`, `script.js` | **source** | Styling and the random-poster button. |
+| `scripts/template.html` | **source** | HTML shell the gallery is built from. |
+| `scripts/random-template.html` | **source** | HTML shell for the random-poster page. |
+| `styles.css` | **source** | Styling. |
+| `random.js` | **source** | Powers the random-poster viewer page. |
 | `index.html` | *generated* | The gallery page. **Do not edit by hand.** |
+| `random.html` | *generated* | The random-poster viewer page. **Do not edit by hand.** |
 | `previews/thumbnails/`, `previews/large/` | *generated* | WebP previews. |
 
 Generated files are recreated by the build script; source files are what you edit.
@@ -77,7 +80,9 @@ To **replace** a poster, overwrite the PDF in `posters/` and run the build (use
 
 ## Change the page title / intro
 
-Edit `data/site.json` (`title`, `subtitle`, `intro`, `footer`) and rebuild.
+Edit `data/site.json` (`title`, `subtitle`, `intro`, `footer`) and rebuild. Empty
+`subtitle`/`intro` are omitted entirely. The `footer` is treated as trusted HTML,
+so it may contain links (e.g. `<a href="...">`).
 
 ## Regenerate the site
 
@@ -101,9 +106,9 @@ python3 -m http.server 8000
 
 ## Publish as a static site
 
-Everything needed is in this folder: `index.html`, `styles.css`, `script.js`,
-`posters/`, and `previews/`. (`data/` and `scripts/` are harmless to publish but
-not required by visitors.)
+Everything needed is in this folder: `index.html`, `random.html`, `styles.css`,
+`random.js`, `posters/`, and `previews/`. (`data/` and `scripts/` are harmless to
+publish but not required by visitors.)
 
 - **GitHub Pages:** commit the repo and enable Pages for the branch, serving
   from the repository root.
@@ -113,11 +118,13 @@ not required by visitors.)
 
 ## Notes on design choices
 
-- **No JavaScript required** to browse: the gallery is plain HTML. JS only adds
-  the random-poster button, which hides itself when JS is disabled.
+- **No JavaScript required** to browse: the gallery is plain HTML. JS only powers
+  the random-poster feature — the "Show me a random poster" button (which hides
+  itself when JS is disabled) opens `random.html`, a dedicated viewer with
+  "Back to all posters" and "Next random poster" controls.
 - Previews are **WebP**, sized ~600px (thumbnail) and ~1800px (large), aspect
   ratio preserved with no cropping. Images lazy-load below the fold and carry
   width/height to avoid layout shift.
-- The random button never picks the same poster twice in a row, scrolls it into
-  view, moves focus to it, briefly highlights it, and respects
-  `prefers-reduced-motion`.
+- The random-poster page never shows the same poster twice in a row, reflects the
+  shown poster in the URL (`random.html#<id>`) so it can be shared, moves focus to
+  the poster title, and respects `prefers-reduced-motion`.

@@ -35,7 +35,9 @@ POSTERS_CSV = os.path.join(DATA_DIR, "posters.csv")
 TEAMS_CSV = os.path.join(DATA_DIR, "teams.csv")
 SITE_JSON = os.path.join(DATA_DIR, "site.json")
 TEMPLATE = os.path.join(ROOT, "scripts", "template.html")
+RANDOM_TEMPLATE = os.path.join(ROOT, "scripts", "random-template.html")
 INDEX_HTML = os.path.join(ROOT, "index.html")
+RANDOM_HTML = os.path.join(ROOT, "random.html")
 
 THUMB_WIDTH = 600     # gallery card image, px
 LARGE_WIDTH = 1800    # lightbox / high-res preview, px
@@ -134,7 +136,7 @@ def card_html(row, thumb_dims, eager: bool) -> str:
     alt = escape(alt)
 
     loading = "eager" if eager else "lazy"
-    parts = [f'<article class="card" id="poster-{escape(row["id"])}" tabindex="-1">']
+    parts = [f'<article class="card" id="poster-{escape(row["id"])}">']
     parts.append(
         f'  <a class="card-media" href="{pdf_url}" target="_blank" rel="noopener"'
         f' aria-label="Open PDF: {title}">'
@@ -156,6 +158,30 @@ def card_html(row, thumb_dims, eager: bool) -> str:
     parts.append('  </div>')
     parts.append('</article>')
     return "\n".join(parts)
+
+
+def poster_data_json(rows, team_labels, dims_by_id):
+    """Compact list consumed by random.js (embedded in random.html)."""
+    data = []
+    for r in rows:
+        alt = f"Poster: {r['title']}"
+        if r.get("authors", "").strip():
+            alt += f" by {r['authors'].strip()}"
+        w, h = dims_by_id.get(r["id"], (0, 0))   # aspect ratio (same as large)
+        data.append({
+            "id": r["id"],
+            "title": r["title"],
+            "authors": r.get("authors", "").strip(),
+            "subteam": r.get("subteam", "").strip(),
+            "team": team_labels.get(r["team"], r["team"]),
+            "description": r.get("description", "").strip(),
+            "pdf": rel_url(r["pdf"]),
+            "img": rel_url(r["preview"]),
+            "w": w,
+            "h": h,
+            "alt": alt,
+        })
+    return data
 
 
 def build_sections_html(rows, dims_by_id, team_order, team_labels):
@@ -320,18 +346,43 @@ def main():
     sections = build_sections_html(rows, dims_by_id, team_order, team_labels)
     with open(TEMPLATE, encoding="utf-8") as f:
         template = f.read()
-    html = (template
-            .replace("{{LANG}}", escape(site.get("lang", "en")))
-            .replace("{{TITLE}}", escape(site["title"]))
-            .replace("{{SUBTITLE}}", escape(site.get("subtitle", "")))
-            .replace("{{INTRO}}", escape(site.get("intro", "")))
-            .replace("{{FOOTER}}", escape(site.get("footer", "")))
-            .replace("{{COUNT}}", str(len(rows)))
-            .replace("{{SECTIONS}}", sections))
+    subtitle = site.get("subtitle", "").strip()
+    intro = site.get("intro", "").strip()
+    common = {
+        "{{LANG}}": escape(site.get("lang", "en")),
+        "{{TITLE}}": escape(site["title"]),
+        "{{SUBTITLE}}": escape(subtitle),
+        # footer is trusted maintainer content and may contain HTML (e.g. links)
+        "{{FOOTER}}": site.get("footer", ""),
+        "{{COUNT}}": str(len(rows)),
+    }
+    # Optional paragraphs vanish entirely when their text is empty.
+    subtitle_block = (f'<p class="site-subtitle">{escape(subtitle)}</p>'
+                      if subtitle else "")
+    intro_block = (f'<p class="site-intro">{escape(intro)}</p>'
+                   if intro else "")
+    html = (template.replace("{{SECTIONS}}", sections)
+            .replace("{{SUBTITLE_BLOCK}}", subtitle_block)
+            .replace("{{INTRO_BLOCK}}", intro_block))
+    for k, v in common.items():
+        html = html.replace(k, v)
     with open(INDEX_HTML, "w", encoding="utf-8") as f:
         f.write(html)
 
-    print(f"\nBuilt index.html with {len(rows)} poster(s) in "
+    # random-poster viewer page
+    data_json = json.dumps(poster_data_json(rows, team_labels, dims_by_id),
+                           ensure_ascii=False, separators=(",", ":"))
+    # neutralize any '<'/'>' so the data can't break out of the <script> tag
+    data_json = data_json.replace("<", "\\u003c").replace(">", "\\u003e")
+    with open(RANDOM_TEMPLATE, encoding="utf-8") as f:
+        rnd = f.read()
+    rnd = rnd.replace("{{DATA}}", data_json)
+    for k, v in common.items():
+        rnd = rnd.replace(k, v)
+    with open(RANDOM_HTML, "w", encoding="utf-8") as f:
+        f.write(rnd)
+
+    print(f"\nBuilt index.html + random.html with {len(rows)} poster(s) in "
           f"{len({r['team'] for r in rows})} section(s) "
           f"({rendered_count} rendered, {cached_count} cached).")
     return 1 if errors else 0

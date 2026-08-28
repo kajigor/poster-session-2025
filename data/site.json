@@ -1,7 +1,7 @@
 {
-  "title": "Poster Showcase",
-  "subtitle": "One-page research posters",
-  "intro": "Browse the posters below, grouped by team. Click any poster to open the original PDF, or hit \u201cShow me a random poster\u201d for a surprise.",
-  "footer": "Generated with scripts/build-gallery.py \u2014 edit data/site.json to change this text.",
+  "title": "JetBrains SE Research · Poster Session 2025",
+  "subtitle": "",
+  "intro": "",
+  "footer": "Built with <a href=\"https://thinkrail.ai\" target=\"_blank\" rel=\"noopener\">ThinkRail</a> and <a href=\"https://pi.dev\" target=\"_blank\" rel=\"noopener\">pi</a> \u2014 an AI coding agent doing the tedious parts \ud83e\udd16",
   "lang": "en"
 }
