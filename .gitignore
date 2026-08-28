@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS cruft
+.DS_Store
+
+# Generated preview images are committed by default so the site works on static
+# hosts without a build step. If you prefer to regenerate them in CI instead,
+# uncomment the next line:
+# previews/
+.DS_Store

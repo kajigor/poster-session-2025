@@ -1,0 +1,7 @@
+{
+  "title": "Poster Showcase",
+  "subtitle": "One-page research posters",
+  "intro": "Browse the posters below, grouped by team. Click any poster to open the original PDF, or hit \u201cShow me a random poster\u201d for a surprise.",
+  "footer": "Generated with scripts/build-gallery.py \u2014 edit data/site.json to change this text.",
+  "lang": "en"
+}
